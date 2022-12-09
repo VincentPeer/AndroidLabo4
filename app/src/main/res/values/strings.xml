@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">DAA_labo4</string>
     <string name="cached_icon">cached_icon</string>
+    <string name="image">image</string>
 </resources>
