@@ -19,6 +19,7 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
         val recycler = findViewById<RecyclerView>(R.id.recycler)
         val adapter = ListAdapter(lifecycleScope)
@@ -26,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         recycler.layoutManager = GridLayoutManager(this, 3)
 
         val items = mutableListOf<Int>()
-        for (i in 1..10) {
+        for (i in 1..10_000) {
             items += i
         }
 
