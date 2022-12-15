@@ -58,9 +58,6 @@ class ListAdapter(coroutineScope_: LifecycleCoroutineScope, _items : List<Int> =
         }
     }
 
-
-
-
     suspend fun downloadImage(url : URL) : ByteArray? = withContext(Dispatchers.IO) {
         try {
             url.readBytes()
