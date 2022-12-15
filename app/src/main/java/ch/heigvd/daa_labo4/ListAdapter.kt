@@ -82,4 +82,5 @@ class ListAdapter(coroutineScope_: LifecycleCoroutineScope, _items : List<Int> =
         else
             myImage.setImageResource(android.R.color.transparent)
     }
+
 }
