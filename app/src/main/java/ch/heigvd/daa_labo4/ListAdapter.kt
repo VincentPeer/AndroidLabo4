@@ -1,22 +1,31 @@
 package ch.heigvd.daa_labo4
 
-import android.annotation.SuppressLint
+import android.content.ContentValues
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
-import androidx.recyclerview.widget.DiffUtil
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
+import java.net.URL
 
-class ListAdapter(_items: List<Int> = listOf()) :
-    RecyclerView.Adapter<ListAdapter.ViewHolder>()  {
 
+class ListAdapter(coroutineScope_: LifecycleCoroutineScope, _items : List<Int> = listOf()) :
+    RecyclerView.Adapter<ListAdapter.ViewHolder>() {
+    val coroutineScope = coroutineScope_
     var items = listOf<Int>()
-//    set(value) {
-//        field = value
-//        notifyDataSetChanged()
-//    }
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     init {
         items = _items
@@ -39,8 +48,43 @@ class ListAdapter(_items: List<Int> = listOf()) :
         private val loader = view.findViewById<ProgressBar>(R.id.loader)
         private val image = view.findViewById<ImageView>(R.id.image)
         fun bind(itemPosition: Int) {
-
+            var url = URL("https://daa.iict.ch/images/$itemPosition.jpg")
+            println("url : " + url.toString())
+            coroutineScope.launch {
+                var bytes = downloadImage(url)
+                var bmp = decodeImage(bytes)
+                displayImage(image, bmp)
+            }
         }
     }
+
+
+
+
+    suspend fun downloadImage(url : URL) : ByteArray? = withContext(Dispatchers.IO) {
+        try {
+            url.readBytes()
+        } catch (e: IOException) {
+            Log.w(ContentValues.TAG, "Exception while downloading image", e)
+            null
+        }
+    }
+
+    suspend fun decodeImage(bytes : ByteArray?) : Bitmap? = withContext(Dispatchers.Default) {
+        try {
+            BitmapFactory.decodeByteArray(bytes, 0, bytes?.size ?: 0)
+        } catch (e: IOException) {
+            Log.w(ContentValues.TAG, "Exception while decoding image", e)
+            null
+        }
+    }
+
+    suspend fun displayImage(myImage : ImageView, bmp : Bitmap?) = withContext(Dispatchers.Main) {
+        if(bmp != null)
+            myImage.setImageBitmap(bmp)
+        else
+            myImage.setImageResource(android.R.color.transparent)
+    }
+
 
 }
