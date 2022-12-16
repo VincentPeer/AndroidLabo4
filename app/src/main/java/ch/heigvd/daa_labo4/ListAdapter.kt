@@ -12,6 +12,7 @@ import android.widget.ProgressBar
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -47,17 +48,32 @@ class ListAdapter(coroutineScope_: LifecycleCoroutineScope, _items : List<Int> =
     inner class ViewHolder(view: View, private val viewType: Int) : RecyclerView.ViewHolder(view) {
         private val loader = view.findViewById<ProgressBar>(R.id.loader)
         private val image = view.findViewById<ImageView>(R.id.image)
+        private var job: Job? = null
         fun bind(itemPosition: Int) {
-            var url = URL("https://daa.iict.ch/images/$itemPosition.jpg")
-            coroutineScope.launch {
-                var bytes = downloadImage(url)
-                var bmp = decodeImage(bytes)
+            job?.cancel()
+            image.visibility = View.INVISIBLE
+            loader.visibility = View.VISIBLE
+            val url = URL("https://daa.iict.ch/images/$itemPosition.jpg")
+            job = coroutineScope.launch {
+                val bytes = downloadImage(url)
+                val bmp = decodeImage(bytes)
                 displayImage(image, bmp)
+                loader.visibility = View.INVISIBLE
+                image.visibility = View.VISIBLE
             }
         }
     }
 
     suspend fun downloadImage(url : URL) : ByteArray? = withContext(Dispatchers.IO) {
+        try {
+            url.readBytes()
+        } catch (e: IOException) {
+            Log.w(ContentValues.TAG, "Exception while downloading image", e)
+            null
+        }
+    }
+
+    suspend fun getCachedImage(url : URL) : ByteArray? = withContext(Dispatchers.IO) {
         try {
             url.readBytes()
         } catch (e: IOException) {
