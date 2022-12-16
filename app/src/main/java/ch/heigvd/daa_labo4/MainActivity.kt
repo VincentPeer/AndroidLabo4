@@ -1,16 +1,21 @@
 package ch.heigvd.daa_labo4
 
+import android.content.ClipData
 import android.graphics.Bitmap
 import android.media.Image
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
+import android.widget.Button
 import android.widget.ImageView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,6 +37,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         adapter.items = items
+
+    }
+
+    /**
+     * Clear cache when pressing the icon in the bar menu
+     */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId) {
+            R.id.cached_icon -> {
+                val workManager = WorkManager.getInstance(applicationContext)
+                val myWorkRequest = OneTimeWorkRequestBuilder<CacheWorker>().build()
+                workManager.enqueue(myWorkRequest)
+                true
+            }
+            else -> {
+                true
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

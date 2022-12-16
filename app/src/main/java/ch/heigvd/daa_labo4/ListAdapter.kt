@@ -49,7 +49,6 @@ class ListAdapter(coroutineScope_: LifecycleCoroutineScope, _items : List<Int> =
         private val image = view.findViewById<ImageView>(R.id.image)
         fun bind(itemPosition: Int) {
             var url = URL("https://daa.iict.ch/images/$itemPosition.jpg")
-            println("url : " + url.toString())
             coroutineScope.launch {
                 var bytes = downloadImage(url)
                 var bmp = decodeImage(bytes)
