@@ -1,20 +1,24 @@
 package ch.heigvd.daa_labo4
 
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.view.Menu
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileWriter
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
         val recycler = findViewById<RecyclerView>(R.id.recycler)
         val adapter = ListAdapter(lifecycleScope)
@@ -25,9 +29,18 @@ class MainActivity : AppCompatActivity() {
         for (i in 1..10_000) {
             items += i
         }
-
         adapter.items = items
 
+        if (isExternalStorageWritable()) {
+            val file = File(externalCacheDir, "myfile.txt")
+            file.writeText("here is the text")
+        } else {
+            println("externalCacheDir not available")
+        }
+    }
+
+    private fun isExternalStorageWritable(): Boolean {
+        return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
     }
 
     /**
@@ -37,6 +50,9 @@ class MainActivity : AppCompatActivity() {
         return when(item.itemId) {
             R.id.cached_icon -> {
                 val workManager = WorkManager.getInstance(applicationContext)
+                //val data = Data.Builder()
+                //data.putString("cache_path", externalCacheDir?.absolutePath)
+                //val myWorkRequest = OneTimeWorkRequestBuilder<CacheWorker>().setInputData(data.build()).build()
                 val myWorkRequest = OneTimeWorkRequestBuilder<CacheWorker>().build()
                 workManager.enqueue(myWorkRequest)
                 true
@@ -54,9 +70,5 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.main_menu, menu)
         return super.onCreateOptionsMenu(menu)
     }
-
-
-
-
 }
 

@@ -11,10 +11,8 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import java.io.File
 import java.io.IOException
 import java.net.URL
 
@@ -49,6 +47,7 @@ class ListAdapter(coroutineScope_: LifecycleCoroutineScope, _items : List<Int> =
         private val loader = view.findViewById<ProgressBar>(R.id.loader)
         private val image = view.findViewById<ImageView>(R.id.image)
         private var job: Job? = null
+
         fun bind(itemPosition: Int) {
             job?.cancel()
             image.visibility = View.INVISIBLE
@@ -71,6 +70,10 @@ class ListAdapter(coroutineScope_: LifecycleCoroutineScope, _items : List<Int> =
             Log.w(ContentValues.TAG, "Exception while downloading image", e)
             null
         }
+    }
+
+    suspend fun saveToCache(bytes: ByteArray, cacheRoot: File, fileName : String) = withContext(Dispatchers.IO) {
+        File(cacheRoot, fileName).writeBytes(bytes) // Ou File(cacheRoot, fileName).use { it ..}
     }
 
     suspend fun getCachedImage(url : URL) : ByteArray? = withContext(Dispatchers.IO) {
@@ -97,5 +100,4 @@ class ListAdapter(coroutineScope_: LifecycleCoroutineScope, _items : List<Int> =
         else
             myImage.setImageResource(android.R.color.transparent)
     }
-
 }
