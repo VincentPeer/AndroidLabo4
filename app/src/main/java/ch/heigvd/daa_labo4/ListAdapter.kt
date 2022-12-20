@@ -17,9 +17,11 @@ import java.io.IOException
 import java.net.URL
 
 
-class ListAdapter(coroutineScope_: LifecycleCoroutineScope, _items : List<Int> = listOf()) :
+class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _cacheRoot: File, _items : List<Int> = listOf()) :
     RecyclerView.Adapter<ListAdapter.ViewHolder>() {
-    val coroutineScope = coroutineScope_
+    val coroutineScope = _coroutineScope
+    val externalCacheRoot = _cacheRoot
+    val cacheMaxTimeStorage = 300_000
     var items = listOf<Int>()
         set(value) {
             field = value
@@ -54,14 +56,24 @@ class ListAdapter(coroutineScope_: LifecycleCoroutineScope, _items : List<Int> =
             loader.visibility = View.VISIBLE
             val url = URL("https://daa.iict.ch/images/$itemPosition.jpg")
             job = coroutineScope.launch {
-                val bytes = downloadImage(url)
+                var bytes : ByteArray?
+                val picture = File(externalCacheRoot, "$itemPosition.jpg")
+                if (!picture.exists() ||  System.currentTimeMillis() - picture.lastModified() > cacheMaxTimeStorage) {
+                    bytes = downloadImage(url)
+                    saveToCache(bytes!!, externalCacheRoot, "$itemPosition.jpg")
+                } else {
+                    bytes = picture.readBytes()
+                }
                 val bmp = decodeImage(bytes)
                 displayImage(image, bmp)
                 loader.visibility = View.INVISIBLE
                 image.visibility = View.VISIBLE
+
             }
         }
     }
+
+
 
     suspend fun downloadImage(url : URL) : ByteArray? = withContext(Dispatchers.IO) {
         try {

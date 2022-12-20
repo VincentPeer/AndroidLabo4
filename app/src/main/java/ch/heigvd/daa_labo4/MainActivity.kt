@@ -9,19 +9,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import java.io.BufferedWriter
 import java.io.File
-import java.io.FileWriter
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val recycler = findViewById<RecyclerView>(R.id.recycler)
-        val adapter = ListAdapter(lifecycleScope)
+        val adapter = ListAdapter(lifecycleScope, externalCacheDir!!)
         recycler.adapter = adapter
         recycler.layoutManager = GridLayoutManager(this, 3)
 
@@ -31,12 +29,6 @@ class MainActivity : AppCompatActivity() {
         }
         adapter.items = items
 
-        if (isExternalStorageWritable()) {
-            val file = File(externalCacheDir, "myfile.txt")
-            file.writeText("here is the text")
-        } else {
-            println("externalCacheDir not available")
-        }
     }
 
     private fun isExternalStorageWritable(): Boolean {
