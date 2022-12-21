@@ -7,9 +7,9 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import ch.heigvd.daa_labo4.databinding.ActivityMainBinding
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
@@ -32,6 +32,15 @@ class MainActivity : AppCompatActivity() {
             items += i
         }
         adapter.items = items
+
+        // Set periodic cache clean
+        val myPeriodicWorkRequest = PeriodicWorkRequestBuilder<CacheWorker>(1, TimeUnit.MINUTES)
+            .setBackoffCriteria(
+                BackoffPolicy.EXPONENTIAL,
+                PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueue(myPeriodicWorkRequest)
     }
 
     /**
@@ -59,4 +68,3 @@ class MainActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 }
-

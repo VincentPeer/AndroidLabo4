@@ -12,6 +12,7 @@ class CacheWorker(appContext: Context, workerParams: WorkerParameters)
     override fun doWork(): Result {
         pictures.listFiles()?.forEach { it.delete()
         }
+        println("cache cleaned")
         return Result.success()
     }
 }

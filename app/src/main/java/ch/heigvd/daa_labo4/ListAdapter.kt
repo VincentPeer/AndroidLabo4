@@ -100,9 +100,13 @@ class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _items : List<Int> =
     }
 
     suspend fun saveToCache(bytes: ByteArray, cacheRoot: File?, fileName : String) = withContext(Dispatchers.IO) {
-        val file = File(cacheRoot, fileName)
-        file.outputStream().use {
-            it.write(bytes)
+        try {
+            File(cacheRoot, fileName).outputStream().use {
+                it.write(bytes)
+            }
+        } catch (e: IOException) {
+            Log.w(ContentValues.TAG, "Exception while saving image to cache", e)
+            null
         }
     }
 
