@@ -60,7 +60,6 @@ class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _items : List<Int> =
             loader.visibility = View.VISIBLE
             val url = URL("https://daa.iict.ch/images/$itemPosition.jpg")
 
-
             job = coroutineScope.launch {
                 var bytes : ByteArray?
                 val picture = File(pictures, "$itemPosition.jpg")
@@ -70,7 +69,7 @@ class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _items : List<Int> =
                     bytes = downloadImage(url)
                     saveToCache(bytes!!, pictures, "$itemPosition.jpg")
                 } else {
-                    bytes = picture.readBytes()
+                    bytes = getFromCache(picture)
                 }
 
                 // Decode bytes and display the image
@@ -82,7 +81,14 @@ class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _items : List<Int> =
         }
     }
 
-
+    suspend fun getFromCache(file: File) : ByteArray? = withContext(Dispatchers.IO) {
+        try {
+            file.readBytes()
+        } catch (e: IOException) {
+            Log.w(ContentValues.TAG, "Exception while downloading image from cache", e)
+            null
+        }
+    }
 
     suspend fun downloadImage(url : URL) : ByteArray? = withContext(Dispatchers.IO) {
         try {
