@@ -51,7 +51,10 @@ class MainActivity : AppCompatActivity() {
             R.id.cached_icon -> {
                 val workManager = WorkManager.getInstance(applicationContext)
                 val myWorkRequest = OneTimeWorkRequestBuilder<CacheWorker>().build()
-                workManager.enqueue(myWorkRequest)
+                workManager.enqueue(myWorkRequest).state.observe(this){
+                    if (it is Operation.State.SUCCESS)
+                        adapter.notifyDataSetChanged()
+                }
                 true
             }
             else -> {
