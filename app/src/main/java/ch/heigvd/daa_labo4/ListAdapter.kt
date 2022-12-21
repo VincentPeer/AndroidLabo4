@@ -15,12 +15,14 @@ import kotlinx.coroutines.*
 import java.io.File
 import java.io.IOException
 import java.net.URL
+import java.util.concurrent.Executors
 
 
 class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _items : List<Int> = listOf()) :
     RecyclerView.Adapter<ListAdapter.ViewHolder>() {
-    val coroutineScope = _coroutineScope
-    val cacheMaxTimeStorage = 300_000
+    private val myThreadDispatcher = Executors.newFixedThreadPool(3).asCoroutineDispatcher()
+    private val coroutineScope = _coroutineScope
+    private val cacheMaxTimeStorage = 300_000
     var items = listOf<Int>()
         set(value) {
             field = value
@@ -41,6 +43,7 @@ class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _items : List<Int> =
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(items[position])
     }
+
 
     override fun getItemCount() = items.size
 
@@ -92,6 +95,17 @@ class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _items : List<Int> =
 
     suspend fun downloadImage(url : URL) : ByteArray? = withContext(Dispatchers.IO) {
         try {
+            // delay(1000) // or Thread.sleep(1000)
+            url.readBytes()
+        } catch (e: IOException) {
+            Log.w(ContentValues.TAG, "Exception while downloading image", e)
+            null
+        }
+    }
+
+    suspend fun downloadImageCustomDispatcher(url : URL) : ByteArray? = withContext(myThreadDispatcher) {
+        try {
+            // delay(1000) // or Thread.sleep(1000)
             url.readBytes()
         } catch (e: IOException) {
             Log.w(ContentValues.TAG, "Exception while downloading image", e)

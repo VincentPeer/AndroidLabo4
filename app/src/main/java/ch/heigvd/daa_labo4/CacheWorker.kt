@@ -10,9 +10,7 @@ class CacheWorker(appContext: Context, workerParams: WorkerParameters)
     private val pictures = File(appContext.externalCacheDir, "pictures")
 
     override fun doWork(): Result {
-        pictures.listFiles()?.forEach { it.delete()
-        }
-        println("cache cleaned")
+        pictures.listFiles()?.forEach { it.delete() }
         return Result.success()
     }
 }

@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
                 val workManager = WorkManager.getInstance(applicationContext)
                 val myWorkRequest = OneTimeWorkRequestBuilder<CacheWorker>().build()
                 workManager.enqueue(myWorkRequest)
+                adapter.notifyDataSetChanged()
                 true
             }
             else -> {
