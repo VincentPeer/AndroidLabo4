@@ -17,10 +17,9 @@ import java.io.IOException
 import java.net.URL
 
 
-class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _cacheRoot: File, _items : List<Int> = listOf()) :
+class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _items : List<Int> = listOf()) :
     RecyclerView.Adapter<ListAdapter.ViewHolder>() {
     val coroutineScope = _coroutineScope
-    val externalCacheRoot = _cacheRoot
     val cacheMaxTimeStorage = 300_000
     var items = listOf<Int>()
         set(value) {
@@ -49,26 +48,36 @@ class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _cacheRoot: File, _i
         private val loader = view.findViewById<ProgressBar>(R.id.loader)
         private val image = view.findViewById<ImageView>(R.id.image)
         private var job: Job? = null
+        private val pictures = File(view.context.externalCacheDir, "pictures")
+
+        init {
+            pictures.mkdirs()
+        }
 
         fun bind(itemPosition: Int) {
             job?.cancel()
             image.visibility = View.INVISIBLE
             loader.visibility = View.VISIBLE
             val url = URL("https://daa.iict.ch/images/$itemPosition.jpg")
+
+
             job = coroutineScope.launch {
                 var bytes : ByteArray?
-                val picture = File(externalCacheRoot, "$itemPosition.jpg")
+                val picture = File(pictures, "$itemPosition.jpg")
+
+                // Download the picture if needed into external cache, read it otherwise
                 if (!picture.exists() ||  System.currentTimeMillis() - picture.lastModified() > cacheMaxTimeStorage) {
                     bytes = downloadImage(url)
-                    saveToCache(bytes!!, externalCacheRoot, "$itemPosition.jpg")
+                    saveToCache(bytes!!, pictures, "$itemPosition.jpg")
                 } else {
                     bytes = picture.readBytes()
                 }
+
+                // Decode bytes and display the image
                 val bmp = decodeImage(bytes)
                 displayImage(image, bmp)
                 loader.visibility = View.INVISIBLE
                 image.visibility = View.VISIBLE
-
             }
         }
     }
@@ -84,16 +93,10 @@ class ListAdapter(_coroutineScope: LifecycleCoroutineScope, _cacheRoot: File, _i
         }
     }
 
-    suspend fun saveToCache(bytes: ByteArray, cacheRoot: File, fileName : String) = withContext(Dispatchers.IO) {
-        File(cacheRoot, fileName).writeBytes(bytes) // Ou File(cacheRoot, fileName).use { it ..}
-    }
-
-    suspend fun getCachedImage(url : URL) : ByteArray? = withContext(Dispatchers.IO) {
-        try {
-            url.readBytes()
-        } catch (e: IOException) {
-            Log.w(ContentValues.TAG, "Exception while downloading image", e)
-            null
+    suspend fun saveToCache(bytes: ByteArray, cacheRoot: File?, fileName : String) = withContext(Dispatchers.IO) {
+        val file = File(cacheRoot, fileName)
+        file.outputStream().use {
+            it.write(bytes)
         }
     }
 

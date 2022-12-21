@@ -7,11 +7,10 @@ import java.io.File
 
 class CacheWorker(appContext: Context, workerParams: WorkerParameters)
     : Worker(appContext, workerParams) {
+    private val pictures = File(appContext.externalCacheDir, "pictures")
+
     override fun doWork(): Result {
-        //val file = File(applicationContext.externalCacheDir, "myfile.txt")
-        applicationContext.externalCacheDir?.deleteRecursively()
+        pictures.listFiles()?.forEach { it.delete() }
         return Result.success()
     }
-
-
 }

@@ -11,24 +11,30 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import ch.heigvd.daa_labo4.databinding.ActivityMainBinding
 import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+    private val adapter = ListAdapter(lifecycleScope)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val recycler = findViewById<RecyclerView>(R.id.recycler)
-        val adapter = ListAdapter(lifecycleScope, externalCacheDir!!)
-        recycler.adapter = adapter
-        recycler.layoutManager = GridLayoutManager(this, 3)
+
+        // Binding views
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.recycler.adapter = adapter
+        binding.recycler.layoutManager = GridLayoutManager(this, 3)
 
         val items = mutableListOf<Int>()
         for (i in 1..10_000) {
             items += i
         }
         adapter.items = items
-
     }
 
     private fun isExternalStorageWritable(): Boolean {
@@ -42,9 +48,6 @@ class MainActivity : AppCompatActivity() {
         return when(item.itemId) {
             R.id.cached_icon -> {
                 val workManager = WorkManager.getInstance(applicationContext)
-                //val data = Data.Builder()
-                //data.putString("cache_path", externalCacheDir?.absolutePath)
-                //val myWorkRequest = OneTimeWorkRequestBuilder<CacheWorker>().setInputData(data.build()).build()
                 val myWorkRequest = OneTimeWorkRequestBuilder<CacheWorker>().build()
                 workManager.enqueue(myWorkRequest)
                 true
