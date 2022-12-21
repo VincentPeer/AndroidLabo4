@@ -2,17 +2,14 @@ package ch.heigvd.daa_labo4
 
 
 import android.os.Bundle
-import android.os.Environment
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import ch.heigvd.daa_labo4.databinding.ActivityMainBinding
-import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
@@ -35,10 +32,6 @@ class MainActivity : AppCompatActivity() {
             items += i
         }
         adapter.items = items
-    }
-
-    private fun isExternalStorageWritable(): Boolean {
-        return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
     }
 
     /**
